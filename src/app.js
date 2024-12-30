@@ -30,7 +30,7 @@ app.use(cors());
 app.options('*', cors());
 
 if (config.env === 'production') {
-    app.use('api/auth', authLimiter);
+    // app.use('api/auth', authLimiter);
 }
 
 app.use('/api', routes);
