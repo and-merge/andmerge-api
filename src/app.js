@@ -7,6 +7,7 @@ const routes = require('./routes');
 const ApiError = require('./utils/ApiError');
 const timezone = process.env.TIME_ZONE;
 const Seed = require('./db/data/index');
+const httpStatus = require('http-status');
 
 //For creating DB. If we update to 'force: false', then it will only update the required changes.
 // if (process.env.NODE_ENV == 'local' || process.env.NODE_ENV == 'development') {
@@ -37,7 +38,7 @@ app.use('/api', routes);
 
 // send back a 404 error for any unknown api request
 app.use((req, res, next) => {
-    next(new ApiError(httpStatus.NOT_FOUND, 'Requested resource is not found'));
+    next(new ApiError(httpStatus.status.NOT_FOUND, 'Requested resource is not found'));
 });
 
 module.exports = app;
