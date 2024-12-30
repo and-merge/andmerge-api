@@ -4,7 +4,7 @@ const cors = require('cors');
 const config = require('./config/config');
 const db = require('./models');
 const routes = require('./routes');
-const ApiError = require('./utils/apiError');
+const ApiError = require('./utils/ApiError');
 const timezone = process.env.TIME_ZONE;
 const Seed = require('./db/data/index');
 

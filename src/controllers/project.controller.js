@@ -2,7 +2,7 @@ const httpStatus = require('http-status');
 
 const { projectService } = require('../services');
 const catchAsync = require("../utils/catchAsync");
-const ApiError = require('../utils/apiError');
+const ApiError = require('../utils/ApiError');
 
 const createProject = catchAsync(async (req, res) => {
     const project = await projectService.createProject(req.body);
