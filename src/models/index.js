@@ -189,7 +189,7 @@ db.projectPageScreens.belongsTo(db.users, {
 
 // ********** Project Status **********
 
-db.projectStatus.hasMany(db.projectPages, {
+db.projectStatus.hasMany(db.projects, {
     foreignKey: {
         name: 'projectStatusId',
     },
