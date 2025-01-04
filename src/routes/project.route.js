@@ -3,6 +3,7 @@ const projectController = require('../controllers/project.controller');
 
 const router = express.Router();
 router.post('/create', projectController.createProject);
+router.get('/:id', projectController.getSingle);
 router.get('/getByUserId/:userId', projectController.getByUserId);
 
 module.exports = router;

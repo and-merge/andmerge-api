@@ -28,11 +28,54 @@ const createProject = async (projectBody) => {
 }
 
 const getProject = async (id) => {
-    return await Project.findByPk(id);
+    const project = await Project.findByPk(id, {
+        include: [
+            {
+                model: db.projectPages,
+                as: 'projectPages',
+                include: [
+                    {
+                        model: db.projectPageScreens,
+                        as: 'projectPageScreens',
+                    },
+                    {
+                        model: db.users,
+                        as: 'createdByUser',
+                    }
+                ]
+            }
+        ]
+    });
+
+    const projectDto = {
+        id: project.id,
+        name: project.name,
+        createdAt: project.createdAt,
+        pages: project.projectPages.map((page) => {
+            const screens = page.projectPageScreens?.map((screen) => (
+                {
+                    id: screen.id,
+                    name: screen.name,
+                    imageUrl: screen.imageUrl,
+                    updatedAt: screen.updatedAt
+                }
+            ));
+
+        return {
+            id: page.id,
+            name: page.name,
+            createdAt: page.createdAt,
+            createdBy: page.createdByUser?.name,
+            createdByImageUrl: page.createdByUser?.imageUrl,
+            screens: screens
+        }
+    })
+}
+
+return projectDto;
 }
 
 const getProjectsByUserId = async (userId) => {
-
     const projects = await Project.findAll({
         where: {
             createdByUserId: userId
@@ -53,7 +96,7 @@ const getProjectsByUserId = async (userId) => {
     });
 
 
-    const projectData = projects.map((project) => {
+    const projectDto = projects.map((project) => {
         const screens = project.projectPages?.flatMap((page) => {
             return page.projectPageScreens.map((screen) => {
                 return {
@@ -74,7 +117,7 @@ const getProjectsByUserId = async (userId) => {
         }
     });
 
-    return projectData;
+    return projectDto;
 }
 
 module.exports = {

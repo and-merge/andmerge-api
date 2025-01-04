@@ -9,6 +9,11 @@ const createProject = catchAsync(async (req, res) => {
     res.status(httpStatus.status.CREATED).send(project);
 });
 
+const getSingle = catchAsync(async (req, res) => {
+    const project = await projectService.getProject(req.params.id);
+    res.send(project);
+});
+
 const getByUserId = catchAsync(async (req, res) => {
     if (!req.params.userId) throw new ApiError(httpStatus.status.BAD_REQUEST, 'No user id');
     const projects = await projectService.getProjectsByUserId(req.params.userId);
@@ -17,5 +22,6 @@ const getByUserId = catchAsync(async (req, res) => {
 
 module.exports = {
     createProject,
+    getSingle,
     getByUserId
 }

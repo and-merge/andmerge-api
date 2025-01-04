@@ -9,7 +9,7 @@ const createUser = catchAsync(async (req, res) => {
     res.status(httpStatus.status.CREATED).send(user);
 });
 
-const getUser = catchAsync(async (req, res) => {
+const getSingle = catchAsync(async (req, res) => {
     const user = await userService.getUser(req.params.id);
     if (!user) throw new ApiError(httpStatus.status.NOT_FOUND, 'User not found');
     res.send(user);
@@ -25,6 +25,6 @@ const getUserByEmail = catchAsync(async (req, res) => {
 
 module.exports = {
     createUser,
-    getUser,
+    getSingle,
     getUserByEmail
 }
