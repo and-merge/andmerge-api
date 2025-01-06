@@ -1,24 +1,19 @@
 module.exports = (sequelize, Sequelize) => {
-    const User = sequelize.define('users', {
+    const ProjectSource = sequelize.define('project_sources', {
         id: {
             type: Sequelize.UUID,
             defaultValue: Sequelize.UUIDV4,
             primaryKey: true,
         },
-        email: {
+        key: {
             type: Sequelize.STRING(255),
-            unique: true,
-            allowNull: false,
         },
-        name: {
+        url: {
             type: Sequelize.STRING(255),
-            allowNull: false,
         },
-        isActive: {
-            type: Sequelize.BOOLEAN,
-            defaultValue: true,
-        }
+    }, {
+        timestamps: false
     });
 
-    return User;
+    return ProjectSource;
 }

@@ -2,12 +2,23 @@ const db = require('../models');
 const Project = db.projects;
 const ProjectPages = db.projectPages;
 const ProjectPageScreens = db.projectPageScreens;
-const { ProjectStatusIdEnum, PROJECT_STATUS_ID_MAPPING } = require('../utils/Enum');
+const ProjectSources = db.projectSources;
+const { ProjectStatusIdEnum, SourceTypeIdEnum, PROJECT_STATUS_ID_MAPPING } = require('../utils/Enum');
 
 const createProject = async (projectBody) => {
     let t = await db.sequelize.transaction();
     try {
+        // Create Project Source
+        const projectSourceBody = {
+            key: projectBody.sourceKey,
+            url: projectBody.sourceUrl,
+            sourceTypeId: SourceTypeIdEnum.FIGMA,
+        }
+
+        const projectSource = await ProjectSources.create(projectSourceBody, { transaction: t });
+
         // Create Project
+        projectBody.projectSourceId = projectSource.id;
         projectBody.statusId = ProjectStatusIdEnum.UPLOADED;
         const project = await Project.create(projectBody, { transaction: t });
 

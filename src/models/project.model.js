@@ -9,14 +9,6 @@ module.exports = (sequelize, Sequelize) => {
             type: Sequelize.STRING(255),
             allowNull: false,
         },
-        figmaFileKey: {
-            type: Sequelize.STRING(22),
-            allowNull: false,
-        },
-        figmaUrl: {
-            type: Sequelize.STRING(255),
-            allowNull: false,
-        },
     });
 
     return Project;

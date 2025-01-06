@@ -23,52 +23,24 @@ db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
 db.users = require('./user.model.js')(sequelize, Sequelize);
+db.userSources = require('./userSource.model.js')(sequelize, Sequelize);
 db.projects = require('./project.model.js')(sequelize, Sequelize);
+db.projectSources = require('./projectSource.model.js')(sequelize, Sequelize);
 db.projectPages = require('./projectPage.model.js')(sequelize, Sequelize);
 db.projectPageScreens = require('./projectPageScreen.model.js')(sequelize, Sequelize);
+db.sourceTypes = require('./sourceType.model.js')(sequelize, Sequelize);
 db.statuses = require('./status.model.js')(sequelize, Sequelize);
 db.statusTypes = require('./statusType.model.js')(sequelize, Sequelize);
 
-// ********** Status Types **********
-
-db.statusTypes.hasMany(db.statuses, {
-    foreignKey: {
-        name: 'statusTypeId',
-    },
-    as: 'statuses'
-});
-
-// ********** Status **********
-
-db.statuses.hasMany(db.projects, {
-    foreignKey: {
-        name: 'statusId',
-    },
-    as: 'projects'
-});
-
-db.statuses.hasMany(db.projectPages, {
-    foreignKey: {
-        name: 'statusId',
-    },
-    as: 'projectPages'
-});
-
-db.statuses.hasMany(db.projectPageScreens, {
-    foreignKey: {
-        name: 'statusId',
-    },
-    as: 'projectPageScreens'
-});
-
-db.statuses.belongsTo(db.statusTypes, {
-    foreignKey: {
-        name: 'statusTypeId',
-    },
-    as: 'statusType'
-});
-
 // ********** Users **********
+
+db.users.hasMany(db.userSources, {
+    foreignKey: {
+        name: 'userId',
+        type: 'UUID'
+    },
+    as: 'userSources'
+});
 
 db.users.hasMany(db.projects, {
     foreignKey: {
@@ -118,6 +90,23 @@ db.users.hasMany(db.projectPageScreens, {
     as: 'projectPageScreensUpdated'
 });
 
+// ********** User Sources **********
+
+db.userSources.belongsTo(db.users, {
+    foreignKey: {
+        name: 'userId',
+        type: 'UUID'
+    },
+    as: 'user'
+});
+
+db.userSources.belongsTo(db.sourceTypes, {
+    foreignKey: {
+        name: 'sourceTypeId',
+    },
+    as: 'sourceType'
+});
+
 // ********** Projects **********
 
 db.projects.belongsTo(db.users, {
@@ -134,6 +123,13 @@ db.projects.belongsTo(db.users, {
         type: 'UUID'
     },
     as: 'updatedByUser'
+});
+
+db.projects.belongsTo(db.projectSources, {
+    foreignKey: {
+        name: 'projectSourceId',
+    },
+    as: 'projectSource'
 });
 
 db.projects.belongsTo(db.statuses, {
@@ -159,22 +155,25 @@ db.projects.hasMany(db.projectPageScreens, {
     as: 'projectPageScreens'
 });
 
-// ********** Project Pages **********
 
-db.projectPages.belongsTo(db.projects, {
+// ********** Project Sources **********
+
+db.projectSources.hasMany(db.projects, {
     foreignKey: {
-        name: 'projectId',
+        name: 'projectSourceId',
         type: 'UUID'
     },
-    as: 'project'
+    as: 'projects'
 });
 
-db.projectPages.belongsTo(db.statuses, {
+db.projectSources.belongsTo(db.sourceTypes, {
     foreignKey: {
-        name: 'statusId',
+        name: 'sourceTypeId'
     },
-    as: 'status'
+    as: 'sourceType'
 });
+
+// ********** Project Pages **********
 
 db.projectPages.belongsTo(db.users, {
     foreignKey: {
@@ -192,6 +191,21 @@ db.projectPages.belongsTo(db.users, {
     as: 'updatedByUser'
 });
 
+db.projectPages.belongsTo(db.projects, {
+    foreignKey: {
+        name: 'projectId',
+        type: 'UUID'
+    },
+    as: 'project'
+});
+
+db.projectPages.belongsTo(db.statuses, {
+    foreignKey: {
+        name: 'statusId',
+    },
+    as: 'status'
+});
+
 db.projectPages.hasMany(db.projectPageScreens, {
     foreignKey: {
         name: 'projectPageId',
@@ -201,6 +215,23 @@ db.projectPages.hasMany(db.projectPageScreens, {
 });
 
 // ********** Project Page Screens **********
+
+
+db.projectPageScreens.belongsTo(db.users, {
+    foreignKey: {
+        name: 'createdByUserId',
+        type: 'UUID'
+    },
+    as: 'createdByUser'
+});
+
+db.projectPageScreens.belongsTo(db.users, {
+    foreignKey: {
+        name: 'createdByUserId',
+        type: 'UUID'
+    },
+    as: 'updatedByUser'
+});
 
 db.projectPageScreens.belongsTo(db.projectPages, {
     foreignKey: {
@@ -225,20 +256,59 @@ db.projectPageScreens.belongsTo(db.statuses, {
     as: 'status'
 });
 
-db.projectPageScreens.belongsTo(db.users, {
+// ********** Status Types **********
+
+db.statusTypes.hasMany(db.statuses, {
     foreignKey: {
-        name: 'createdByUserId',
-        type: 'UUID'
+        name: 'statusTypeId',
     },
-    as: 'createdByUser'
+    as: 'statuses'
 });
 
-db.projectPageScreens.belongsTo(db.users, {
+// ********** Status **********
+
+db.statuses.hasMany(db.projects, {
     foreignKey: {
-        name: 'createdByUserId',
-        type: 'UUID'
+        name: 'statusId',
     },
-    as: 'updatedByUser'
+    as: 'projects'
+});
+
+db.statuses.hasMany(db.projectPages, {
+    foreignKey: {
+        name: 'statusId',
+    },
+    as: 'projectPages'
+});
+
+db.statuses.hasMany(db.projectPageScreens, {
+    foreignKey: {
+        name: 'statusId',
+    },
+    as: 'projectPageScreens'
+});
+
+db.statuses.belongsTo(db.statusTypes, {
+    foreignKey: {
+        name: 'statusTypeId',
+    },
+    as: 'statusType'
+});
+
+// ********** Source Types **********
+
+db.sourceTypes.hasMany(db.userSources, {
+    foreignKey: {
+        name: 'sourceTypeId'
+    },
+    as: 'userSources'
+});
+
+db.sourceTypes.hasMany(db.projectSources, {
+    foreignKey: {
+        name: 'sourceTypeId'
+    },
+    as: 'projectSources'
 });
 
 module.exports = db;

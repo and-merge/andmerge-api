@@ -8,6 +8,10 @@ const ProjectStatusIdEnum = {
     DESIGN_UPDATED: 7
 }
 
+const SourceTypeIdEnum = {
+    FIGMA: 1,
+}
+
 const PROJECT_STATUS_ID_MAPPING = {
     1: 'Uploaded',
     2: 'In development',
@@ -20,5 +24,6 @@ const PROJECT_STATUS_ID_MAPPING = {
 
 module.exports = {
     ProjectStatusIdEnum,
+    SourceTypeIdEnum,
     PROJECT_STATUS_ID_MAPPING
 }
