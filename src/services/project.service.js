@@ -2,22 +2,33 @@ const db = require('../models');
 const Project = db.projects;
 const ProjectPages = db.projectPages;
 const ProjectPageScreens = db.projectPageScreens;
-const { ProjectStatusIdEnum } = require('../utils/Enum');
+const { ProjectStatusIdEnum, PROJECT_STATUS_ID_MAPPING } = require('../utils/Enum');
 
 const createProject = async (projectBody) => {
     let t = await db.sequelize.transaction();
     try {
-        projectBody.projectStatusId = ProjectStatusIdEnum.UPLOADED;
+        // Create Project
+        projectBody.statusId = ProjectStatusIdEnum.UPLOADED;
         const project = await Project.create(projectBody, { transaction: t });
-        for (let projectPageBody of projectBody.pages) {
-            projectPageBody.projectId = project.dataValues.id;
-            const projectPage = await ProjectPages.create(projectPageBody, { transaction: t });
-            for (let projectPageScreenBody of projectPageBody.screens) {
-                projectPageScreenBody.projectPageId = projectPage.id;
-                projectPageScreenBody.projectId = project.dataValues.id;
-                const projectPageScreen = await ProjectPageScreens.create(projectPageScreenBody, { transaction: t });
-            }
+
+        // Create Project Page
+        const projectPageBody = {
+            name: 'Page 1',
+            statusId: ProjectStatusIdEnum.UPLOADED,
+            projectId: project.dataValues.id,
+            createdByUserId: projectBody.createdByUserId,
+            updatedByUserId: projectBody.updatedByUserId,
         }
+
+        const projectPage = await ProjectPages.create(projectPageBody, { transaction: t });
+
+        projectBody.screens.forEach((screen) => {
+            screen.projectPageId = projectPage.id;
+            screen.projectId = project.dataValues.id;
+            screen.statusId = ProjectStatusIdEnum.UPLOADED;
+        });
+
+        await ProjectPageScreens.bulkCreate(projectBody.screens, { validate: true, transaction: t });
 
         await t.commit();
         return await getProject(project.id);
@@ -56,23 +67,25 @@ const getProject = async (id) => {
                 {
                     id: screen.id,
                     name: screen.name,
+                    status: PROJECT_STATUS_ID_MAPPING[screen.statusId],
                     imageUrl: screen.imageUrl,
                     updatedAt: screen.updatedAt
                 }
             ));
 
-        return {
-            id: page.id,
-            name: page.name,
-            createdAt: page.createdAt,
-            createdBy: page.createdByUser?.name,
-            createdByImageUrl: page.createdByUser?.imageUrl,
-            screens: screens
-        }
-    })
-}
+            return {
+                id: page.id,
+                name: page.name,
+                status: PROJECT_STATUS_ID_MAPPING[page.statusId],
+                createdAt: page.createdAt,
+                createdBy: page.createdByUser?.name,
+                createdByImageUrl: page.createdByUser?.imageUrl,
+                screens: screens
+            }
+        })
+    }
 
-return projectDto;
+    return projectDto;
 }
 
 const getProjectsByUserId = async (userId) => {
@@ -88,8 +101,10 @@ const getProjectsByUserId = async (userId) => {
                     {
                         model: db.projectPageScreens,
                         as: 'projectPageScreens',
+                        order: [['createdAt', 'ASC']]
                     }
-                ]
+                ],
+                order: [['createdAt', 'ASC']]
             },
         ],
         order: [['createdAt', 'DESC']]
@@ -97,23 +112,33 @@ const getProjectsByUserId = async (userId) => {
 
 
     const projectDto = projects.map((project) => {
-        const screens = project.projectPages?.flatMap((page) => {
-            return page.projectPageScreens.map((screen) => {
+        let screenCount = 0;
+        const pages = project.projectPages?.map((page) => {
+            const screens = page.projectPageScreens.map((screen) => {
                 return {
                     id: screen.id,
                     name: screen.name,
-                    figmaNodeId: screen.figmaNodeId,
+                    sourceUrl: screen.sourceUrl,
                     imageUrl: screen.imageUrl
                 }
             });
+
+            screenCount += screens.length;
+
+            return {
+                id: page.id,
+                name: page.name,
+                screens: screens
+            }
         });
 
         return {
             id: project.id,
             name: project.name,
             updatedAt: project.updatedAt,
-            projectStatusId: project.projectStatusId,
-            screens: screens
+            status: PROJECT_STATUS_ID_MAPPING[project.statusId],
+            pages: pages,
+            screenCount: screenCount,
         }
     });
 

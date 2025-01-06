@@ -10,10 +10,6 @@ module.exports = (sequelize, Sequelize) => {
             type: Sequelize.STRING(255),
             allowNull: false,
         },
-        figmaNodeId: {
-            type: Sequelize.STRING(255),
-            allowNull: true,
-        },
     });
 
     return projectPage;

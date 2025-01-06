@@ -10,7 +10,7 @@ module.exports = (sequelize, Sequelize) => {
             type: Sequelize.STRING(255),
             allowNull: false,
         },
-        figmaNodeId: {
+        sourceUrl: {
             type: Sequelize.STRING(255),
             allowNull: true,
         },

@@ -13,7 +13,7 @@ module.exports = (sequelize, Sequelize) => {
             type: Sequelize.STRING(22),
             allowNull: false,
         },
-        figmaLink: {
+        figmaUrl: {
             type: Sequelize.STRING(255),
             allowNull: false,
         },
