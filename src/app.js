@@ -1,5 +1,6 @@
 const express = require('express');
 const xss = require('xss-clean');
+const compression = require('compression');
 const cors = require('cors');
 const config = require('./config/config');
 const db = require('./models');
@@ -21,10 +22,16 @@ const app = express();
 const port = 3001;
 
 // parse json request body
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+
+// parse urlencoded request body
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // sanitize request data
 app.use(xss());
+
+// gzip compression
+app.use(compression());
 
 // enable cors
 app.use(cors());
