@@ -1,12 +1,20 @@
 const httpStatus = require('http-status');
 
-const { projectService } = require('../services');
+const { projectService, projectPageService } = require('../services');
 const catchAsync = require("../utils/catchAsync");
 const ApiError = require('../utils/ApiError');
+const { ProjectStatusIdEnum } = require('../utils/Enum');
 
 const createProject = catchAsync(async (req, res) => {
     const project = await projectService.createProject(req.body);
     res.status(httpStatus.status.CREATED).send(project);
+});
+
+const createPage = catchAsync(async (req, res) => {
+    req.body.projectId = req.params.id;
+    req.body.statusId = ProjectStatusIdEnum.UPLOADED;
+    const projectPage = await projectPageService.createProjectPage(req.body);
+    res.status(httpStatus.status.CREATED).send(projectPage);
 });
 
 const getSingle = catchAsync(async (req, res) => {
@@ -22,6 +30,7 @@ const getByUserId = catchAsync(async (req, res) => {
 
 module.exports = {
     createProject,
+    createPage,
     getSingle,
     getByUserId
 }

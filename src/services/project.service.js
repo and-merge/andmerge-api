@@ -64,7 +64,8 @@ const getProject = async (id) => {
                         model: db.users,
                         as: 'createdByUser',
                     }
-                ]
+                ],
+                order: [['createdAt', 'ASC']]
             }
         ]
     });
