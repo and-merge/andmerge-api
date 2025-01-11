@@ -140,6 +140,7 @@ const getProjectsByUserId = async (userId) => {
             return {
                 id: page.id,
                 name: page.name,
+                createdAt: page.createdAt,
                 screens: screens
             }
         });
