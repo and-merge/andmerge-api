@@ -37,6 +37,17 @@ const bulkUpdateProjectPageScreens = async (projectPageScreenIds, projectPageScr
     }
 }
 
+const bulkDeleteProjectPageScreens = async (projectPageScreenIds) => {
+    let t = await db.sequelize.transaction();
+    try {
+        await ProjectPageScreen.destroy({ where: { id: projectPageScreenIds } }, { transaction: t });
+        await t.commit();
+    } catch (error) {
+        await t.rollback();
+        console.error(error);
+    }
+}
+
 const getProjectPageScreen = async (id) => {
     return await ProjectPageScreen.findByPk(id);
 }
@@ -45,5 +56,6 @@ module.exports = {
     createProjectPageScreen,
     updateProjectPageScreen,
     bulkUpdateProjectPageScreens,
+    bulkDeleteProjectPageScreens,
     getProjectPageScreen
 }
