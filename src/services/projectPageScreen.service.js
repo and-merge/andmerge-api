@@ -1,4 +1,5 @@
 const db = require('../models');
+const { PROJECT_STATUS_ID_MAPPING } = require('../utils/Enum');
 const ProjectPageScreen = db.projectPageScreens;
 
 const createProjectPageScreen = async (projectPageScreenBody) => {
@@ -49,7 +50,40 @@ const bulkDeleteProjectPageScreens = async (projectPageScreenIds) => {
 }
 
 const getProjectPageScreen = async (id) => {
-    return await ProjectPageScreen.findByPk(id);
+    const projectPageScreen = await ProjectPageScreen.findByPk(id,
+        {
+            include: [
+                {
+                    model: db.users,
+                    as: 'createdByUser',
+                },
+                {
+                    model: db.projects,
+                    as: 'project',
+                    include: [
+                        {
+                            model: db.projectSources,
+                            as: 'projectSource'
+                        }
+                    ]
+                }
+            ]
+        });
+
+    const projectPageScreenDto = {
+        id: projectPageScreen.id,
+        name: projectPageScreen.name,
+        sourceId: projectPageScreen.sourceId,
+        status: PROJECT_STATUS_ID_MAPPING[projectPageScreen.statusId],
+        figmaFileKey: projectPageScreen.project?.projectSource?.key,
+        imageUrl: projectPageScreen.imageUrl,
+        createdAt: projectPageScreen.createdAt,
+        createdBy: projectPageScreen.createdByUser?.name,
+        createdByImageUrl: projectPageScreen.createdByUser?.imageUrl,
+        updatedAt: projectPageScreen.updatedAt,
+    };
+
+    return await projectPageScreenDto;
 }
 
 module.exports = {

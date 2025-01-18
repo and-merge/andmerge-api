@@ -161,7 +161,6 @@ db.projects.hasMany(db.projectPageScreens, {
 db.projectSources.hasMany(db.projects, {
     foreignKey: {
         name: 'projectSourceId',
-        type: 'UUID'
     },
     as: 'projects'
 });
@@ -209,7 +208,6 @@ db.projectPages.belongsTo(db.statuses, {
 db.projectPages.hasMany(db.projectPageScreens, {
     foreignKey: {
         name: 'projectPageId',
-        type: 'UUID'
     },
     as: 'projectPageScreens'
 });
@@ -236,7 +234,6 @@ db.projectPageScreens.belongsTo(db.users, {
 db.projectPageScreens.belongsTo(db.projectPages, {
     foreignKey: {
         name: 'projectPageId',
-        type: 'UUID'
     },
     as: 'projectPage'
 });
