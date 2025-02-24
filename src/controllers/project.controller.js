@@ -12,7 +12,7 @@ const createProject = catchAsync(async (req, res) => {
 
 const createPage = catchAsync(async (req, res) => {
     req.body.projectId = req.params.id;
-    req.body.statusId = ProjectStatusIdEnum.UPLOADED;
+    req.body.statusId = ProjectStatusIdEnum.UPLOADING;
     const projectPage = await projectPageService.createProjectPage(req.body);
     res.status(httpStatus.status.CREATED).send(projectPage);
 });

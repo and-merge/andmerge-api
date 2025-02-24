@@ -3,6 +3,7 @@ const userRoute = require('./user.route');
 const projectRoute = require('./project.route');
 const projectPageRoute = require('./projectPage.route');
 const projectPageScreenRoute = require('./projectPageScreen.route');
+const authRoute = require('./auth.route');
 
 const router = express.Router();
 
@@ -11,6 +12,7 @@ const defaultRoutes = [
     { path: '/projects', route: projectRoute },
     { path: '/projectPages', route: projectPageRoute },
     { path: '/projectPageScreens', route: projectPageScreenRoute },
+    { path: '/auth', route: authRoute },
 ]
 
 defaultRoutes.forEach((route) => {

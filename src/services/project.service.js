@@ -1,4 +1,5 @@
 const db = require('../models');
+const { boss } = require('../pgboss');
 const Project = db.projects;
 const ProjectPages = db.projectPages;
 const ProjectPageScreens = db.projectPageScreens;
@@ -19,13 +20,13 @@ const createProject = async (projectBody) => {
 
         // Create Project
         projectBody.projectSourceId = projectSource.id;
-        projectBody.statusId = ProjectStatusIdEnum.UPLOADED;
+        projectBody.statusId = ProjectStatusIdEnum.UPLOADING;
         const project = await Project.create(projectBody, { transaction: t });
 
         // Create Project Page
         const projectPageBody = {
             name: 'Page 1',
-            statusId: ProjectStatusIdEnum.UPLOADED,
+            statusId: ProjectStatusIdEnum.UPLOADING,
             projectId: project.dataValues.id,
             createdByUserId: projectBody.createdByUserId,
             updatedByUserId: projectBody.updatedByUserId,
@@ -34,14 +35,17 @@ const createProject = async (projectBody) => {
         const projectPage = await ProjectPages.create(projectPageBody, { transaction: t });
 
         projectBody.screens.forEach((screen) => {
+            screen.imageUrl = null;
             screen.projectPageId = projectPage.id;
             screen.projectId = project.dataValues.id;
-            screen.statusId = ProjectStatusIdEnum.UPLOADED;
+            screen.statusId = ProjectStatusIdEnum.UPLOADING;
         });
 
         await ProjectPageScreens.bulkCreate(projectBody.screens, { validate: true, transaction: t });
 
         await t.commit();
+        await boss.createQueue('processImages');
+        await boss.send('processImages', { projectId: project.id, token: projectBody.token, sourceKey: projectBody.sourceKey });
         return await getProject(project.id);
     } catch (error) {
         await t.rollback();

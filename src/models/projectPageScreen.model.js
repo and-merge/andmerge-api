@@ -13,6 +13,9 @@ module.exports = (sequelize, Sequelize) => {
             type: Sequelize.STRING(255),
             allowNull: true,
         },
+        version: {
+            type: Sequelize.STRING(255),
+        },
         imageUrl: {
             type: Sequelize.STRING(255),
             allowNull: true,

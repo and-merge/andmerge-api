@@ -27,7 +27,9 @@ db.userSources = require('./userSource.model.js')(sequelize, Sequelize);
 db.projects = require('./project.model.js')(sequelize, Sequelize);
 db.projectSources = require('./projectSource.model.js')(sequelize, Sequelize);
 db.projectPages = require('./projectPage.model.js')(sequelize, Sequelize);
+db.projectPageDocumentations = require('./projectPageDocumentation.model.js')(sequelize, Sequelize);
 db.projectPageScreens = require('./projectPageScreen.model.js')(sequelize, Sequelize);
+db.projectPageScreenDocumentations = require('./projectPageScreenDocumentation.model.js')(sequelize, Sequelize);
 db.sourceTypes = require('./sourceType.model.js')(sequelize, Sequelize);
 db.statuses = require('./status.model.js')(sequelize, Sequelize);
 db.statusTypes = require('./statusType.model.js')(sequelize, Sequelize);
@@ -88,6 +90,22 @@ db.users.hasMany(db.projectPageScreens, {
         type: 'UUID'
     },
     as: 'projectPageScreensUpdated'
+});
+
+db.users.hasMany(db.projectPageDocumentations, {
+    foreignKey: {
+        name: 'userId',
+        type: 'UUID'
+    },
+    as: 'projectPageDocumentations'
+});
+
+db.users.hasMany(db.projectPageScreenDocumentations, {
+    foreignKey: {
+        name: 'userId',
+        type: 'UUID'
+    },
+    as: 'projectPageScreenDocumentations'
 });
 
 // ********** User Sources **********
@@ -212,6 +230,36 @@ db.projectPages.hasMany(db.projectPageScreens, {
     as: 'projectPageScreens'
 });
 
+db.projectPages.hasMany(db.projectPageDocumentations, {
+    foreignKey: {
+        name: 'projectPageId',
+    },
+    as: 'projectPageDocumentations'
+});
+
+// ********** Project Page Documentations **********
+
+db.projectPageDocumentations.belongsTo(db.projectPages, {
+    foreignKey: {
+        name: 'projectPageId',
+    },
+    as: 'projectPage'
+});
+
+db.projectPageDocumentations.belongsTo(db.users, {
+    foreignKey: {
+        name: 'createdByUserId',
+    },
+    as: 'createdByUser'
+});
+
+db.projectPageDocumentations.belongsTo(db.users, {
+    foreignKey: {
+        name: 'updatedByUserId',
+    },
+    as: 'updatedByUser'
+});
+
 // ********** Project Page Screens **********
 
 
@@ -251,6 +299,29 @@ db.projectPageScreens.belongsTo(db.statuses, {
         name: 'statusId',
     },
     as: 'status'
+});
+
+// ********** Project Page Documentations **********
+
+db.projectPageScreenDocumentations.belongsTo(db.projectPages, {
+    foreignKey: {
+        name: 'projectPageScreenId',
+    },
+    as: 'projectPageScreen'
+});
+
+db.projectPageScreenDocumentations.belongsTo(db.users, {
+    foreignKey: {
+        name: 'createdByUserId',
+    },
+    as: 'createdByUser'
+});
+
+db.projectPageScreenDocumentations.belongsTo(db.users, {
+    foreignKey: {
+        name: 'updatedByUserId',
+    },
+    as: 'updatedByUser'
 });
 
 // ********** Status Types **********
