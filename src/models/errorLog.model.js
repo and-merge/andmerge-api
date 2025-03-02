@@ -1,10 +1,13 @@
 module.exports = (sequelize, Sequelize) => {
-    const Log = sequelize.define('logs', {
+    const ErrorLog = sequelize.define('error_logs', {
+        type: {
+            type: Sequelize.STRING(100),
+        },
         message: {
             type: Sequelize.TEXT,
             allowNull: false,
         },
     });
 
-    return Log;
+    return ErrorLog;
 }

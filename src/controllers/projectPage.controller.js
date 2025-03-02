@@ -13,7 +13,7 @@ const moveProjectScreens = catchAsync(async (req, res) => {
         projectId: projectPage.projectId,
     };
 
-    await projectPageScreenService.bulkUpdateProjectPageScreens(projectPageScreenIds, projectPageScreenBody);
+    await projectPageScreenService.bulkUpdate(projectPageScreenIds, projectPageScreenBody);
 
     res.send(true);
 });

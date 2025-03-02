@@ -9,6 +9,11 @@ module.exports = (sequelize, Sequelize) => {
             type: Sequelize.STRING(255),
             allowNull: false,
         },
+        importing: {
+            type: Sequelize.BOOLEAN,
+            allowNull: false,
+            default: false,
+        },
     });
 
     return Project;

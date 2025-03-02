@@ -1,13 +1,16 @@
+const { fn, col, literal } = require('sequelize');
 const db = require('../models');
 const { boss } = require('../pgboss');
 const Project = db.projects;
 const ProjectPages = db.projectPages;
 const ProjectPageScreens = db.projectPageScreens;
 const ProjectSources = db.projectSources;
+const ScreenVariantGroups = db.screenVariantGroups;
 const { ProjectStatusIdEnum, SourceTypeIdEnum, PROJECT_STATUS_ID_MAPPING } = require('../utils/Enum');
 
-const createProject = async (projectBody) => {
+const create = async (projectBody) => {
     let t = await db.sequelize.transaction();
+    let project = null;
     try {
         // Create Project Source
         const projectSourceBody = {
@@ -20,13 +23,14 @@ const createProject = async (projectBody) => {
 
         // Create Project
         projectBody.projectSourceId = projectSource.id;
-        projectBody.statusId = ProjectStatusIdEnum.UPLOADING;
-        const project = await Project.create(projectBody, { transaction: t });
+        projectBody.importing = true;
+        projectBody.statusId = ProjectStatusIdEnum.UPLOADED;
+        project = await Project.create(projectBody, { transaction: t });
 
         // Create Project Page
         const projectPageBody = {
             name: 'Page 1',
-            statusId: ProjectStatusIdEnum.UPLOADING,
+            statusId: ProjectStatusIdEnum.UPLOADED,
             projectId: project.dataValues.id,
             createdByUserId: projectBody.createdByUserId,
             updatedByUserId: projectBody.updatedByUserId,
@@ -38,73 +42,96 @@ const createProject = async (projectBody) => {
             screen.imageUrl = null;
             screen.projectPageId = projectPage.id;
             screen.projectId = project.dataValues.id;
-            screen.statusId = ProjectStatusIdEnum.UPLOADING;
+            screen.statusId = ProjectStatusIdEnum.UPLOADED;
         });
 
         await ProjectPageScreens.bulkCreate(projectBody.screens, { validate: true, transaction: t });
-
         await t.commit();
-        await boss.createQueue('processImages');
-        await boss.send('processImages', { projectId: project.id, token: projectBody.token, sourceKey: projectBody.sourceKey });
-        return await getProject(project.id);
     } catch (error) {
         await t.rollback();
         console.error(error);
     }
-}
 
-const getProject = async (id) => {
-    const project = await Project.findByPk(id, {
-        include: [
-            {
-                model: db.projectPages,
-                as: 'projectPages',
-                include: [
-                    {
-                        model: db.projectPageScreens,
-                        as: 'projectPageScreens',
-                    },
-                    {
-                        model: db.users,
-                        as: 'createdByUser',
-                    }
-                ],
-                order: [['createdAt', 'ASC']]
-            }
-        ]
-    });
-
-    const projectDto = {
-        id: project.id,
-        name: project.name,
-        createdAt: project.createdAt,
-        pages: project.projectPages.map((page) => {
-            const screens = page.projectPageScreens?.map((screen) => (
-                {
-                    id: screen.id,
-                    name: screen.name,
-                    status: PROJECT_STATUS_ID_MAPPING[screen.statusId],
-                    imageUrl: screen.imageUrl,
-                    updatedAt: screen.updatedAt
-                }
-            ));
-
-            return {
-                id: page.id,
-                name: page.name,
-                status: PROJECT_STATUS_ID_MAPPING[page.statusId],
-                createdAt: page.createdAt,
-                createdBy: page.createdByUser?.name,
-                createdByImageUrl: page.createdByUser?.imageUrl,
-                screens: screens
-            }
-        })
+    if (project) {
+        await boss.createQueue('processImages');
+        await boss.send('processImages', { projectId: project.id, token: projectBody.token, sourceKey: projectBody.sourceKey });
     }
 
-    return projectDto;
+    return await getSingle(project.id);
 }
 
-const getProjectsByUserId = async (userId) => {
+const getSingle = async (id) => {
+    try {
+        const project = await Project.findByPk(id, {
+            include: [
+                {
+                    model: db.projectPages,
+                    as: 'projectPages',
+                    include: [
+                        {
+                            model: db.projectPageScreens,
+                            as: 'projectPageScreens',
+                            include: [
+                                {
+                                    model: db.screenVariantGroups,
+                                    as: 'screenVariantGroup',
+                                    include: [
+                                        {
+                                            model: db.projectPageScreens,
+                                            as: 'projectPageScreens',
+                                            attributes: []
+                                        }
+                                    ],
+                                }
+                            ],
+                            order: [['id', 'ASC']]
+                        },
+                        {
+                            model: db.users,
+                            as: 'createdByUser',
+                        }
+                    ],
+                    order: [['createdAt', 'ASC']]
+                }
+            ]
+        });
+
+        const projectDto = {
+            id: project.id,
+            name: project.name,
+            importing: project.importing,
+            createdAt: project.createdAt,
+            pages: project.projectPages.map((page) => {
+                const screens = page.projectPageScreens?.map((screen) => ({
+                    id: screen.id,
+                    name: screen.name,
+                    imageUrl: screen.imageUrl,
+                    screenVariantGroupId: screen.screenVariantGroupId,
+                    variantCount: screen.screenVariantGroup?.dataValues?.screenVariants?.length ?? 0,
+                    variantName: screen.variantName,
+                    status: PROJECT_STATUS_ID_MAPPING[screen.statusId],
+                    updatedAt: screen.updatedAt
+                }));
+
+                return {
+                    id: page.id,
+                    name: page.name,
+                    status: PROJECT_STATUS_ID_MAPPING[page.statusId],
+                    createdAt: page.createdAt,
+                    createdBy: page.createdByUser?.name,
+                    createdByImageUrl: page.createdByUser?.imageUrl,
+                    screens: screens
+                }
+            })
+        }
+
+        return projectDto;
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+const getAllByUserId = async (userId) => {
     const projects = await Project.findAll({
         where: {
             createdByUserId: userId
@@ -129,6 +156,8 @@ const getProjectsByUserId = async (userId) => {
 
     const projectDto = projects.map((project) => {
         let screenCount = 0;
+        let importedScreenCount = 0;
+
         const pages = project.projectPages?.map((page) => {
             const screens = page.projectPageScreens.map((screen) => {
                 return {
@@ -140,22 +169,25 @@ const getProjectsByUserId = async (userId) => {
             });
 
             screenCount += screens.length;
+            importedScreenCount += screens.filter((screen) => screen.imageUrl !== null).length;
 
             return {
                 id: page.id,
                 name: page.name,
                 createdAt: page.createdAt,
-                screens: screens
+                screens: screens.slice(0, 4)
             }
         });
 
         return {
             id: project.id,
             name: project.name,
+            importing: project.importing,
             updatedAt: project.updatedAt,
             status: PROJECT_STATUS_ID_MAPPING[project.statusId],
             pages: pages,
             screenCount: screenCount,
+            importedScreenCount: importedScreenCount,
         }
     });
 
@@ -163,7 +195,7 @@ const getProjectsByUserId = async (userId) => {
 }
 
 module.exports = {
-    createProject,
-    getProject,
-    getProjectsByUserId
+    create,
+    getSingle,
+    getAllByUserId
 }

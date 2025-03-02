@@ -29,6 +29,7 @@ db.projectSources = require('./projectSource.model.js')(sequelize, Sequelize);
 db.projectPages = require('./projectPage.model.js')(sequelize, Sequelize);
 db.projectPageDocumentations = require('./projectPageDocumentation.model.js')(sequelize, Sequelize);
 db.projectPageScreens = require('./projectPageScreen.model.js')(sequelize, Sequelize);
+db.screenVariantGroups = require('./screenVariantGroup.model.js')(sequelize, Sequelize);
 db.projectPageScreenDocumentations = require('./projectPageScreenDocumentation.model.js')(sequelize, Sequelize);
 db.sourceTypes = require('./sourceType.model.js')(sequelize, Sequelize);
 db.statuses = require('./status.model.js')(sequelize, Sequelize);
@@ -262,7 +263,6 @@ db.projectPageDocumentations.belongsTo(db.users, {
 
 // ********** Project Page Screens **********
 
-
 db.projectPageScreens.belongsTo(db.users, {
     foreignKey: {
         name: 'createdByUserId',
@@ -301,7 +301,23 @@ db.projectPageScreens.belongsTo(db.statuses, {
     as: 'status'
 });
 
-// ********** Project Page Documentations **********
+db.projectPageScreens.belongsTo(db.screenVariantGroups, {
+    foreignKey: {
+        name: 'screenVariantGroupId',
+    },
+    as: 'screenVariantGroup'
+});
+
+// ********** Screen Variant Groups **********
+
+db.screenVariantGroups.hasMany(db.projectPageScreens, {
+    foreignKey: {
+        name: 'screenVariantGroupId',
+    },
+    as: 'projectPageScreens'
+});
+
+// ********** Project Page Screen Documentations **********
 
 db.projectPageScreenDocumentations.belongsTo(db.projectPages, {
     foreignKey: {

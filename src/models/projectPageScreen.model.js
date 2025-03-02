@@ -5,6 +5,10 @@ module.exports = (sequelize, Sequelize) => {
             type: Sequelize.STRING(255),
             allowNull: false,
         },
+        variantName: {
+            type: Sequelize.STRING(255),
+            allowNull: true,
+        },
         sourceId: {
             type: Sequelize.STRING(255),
             allowNull: true,

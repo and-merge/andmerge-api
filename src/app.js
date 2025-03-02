@@ -22,8 +22,6 @@ const passport = require('./config/passport').passport;
 const app = express();
 const port = 3001;
 
-
-
 // parse json request body
 app.use(express.json({ limit: '50mb' }));
 
