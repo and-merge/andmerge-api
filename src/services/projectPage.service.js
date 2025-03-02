@@ -1,21 +1,34 @@
 const db = require('../models');
 const { PROJECT_STATUS_ID_MAPPING } = require('../utils/Enum');
 const ProjectPage = db.projectPages;
-const ProjectScreen = db.projectScreens;
 
-const createProjectPage = async (projectPageBody) => {
+const create = async (projectPageBody) => {
     let t = await db.sequelize.transaction();
     try {
         const projectPage = await ProjectPage.create(projectPageBody, { transaction: t });
         await t.commit();
-        return await getProjectPage(projectPage.id);
+        return await getSingle(projectPage.id);
     } catch (error) {
         await t.rollback();
         console.error(error);
     }
 }
 
-const getProjectPage = async (id) => {
+const update = async (projectPageId, projectPageBody) => {
+    let t = await db.sequelize.transaction();
+    let projectPage = null;
+    try {
+        projectPage = await ProjectPage.update(projectPageBody, { where: { id: projectPageId } }, { transaction: t });
+        await t.commit();
+    } catch (error) {
+        await t.rollback();
+        console.error(error);
+    }
+
+    return await getSingle(projectPageId);
+}
+
+const getSingle = async (id) => {
     const projectPage = await ProjectPage.findByPk(id, {
         include: [
             {
@@ -53,6 +66,7 @@ const getProjectPage = async (id) => {
 }
 
 module.exports = {
-    createProjectPage,
-    getProjectPage
+    create,
+    update,
+    getSingle
 }

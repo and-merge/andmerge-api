@@ -4,8 +4,13 @@ const { projectPageService, projectPageScreenService } = require('../services');
 const catchAsync = require("../utils/catchAsync");
 const ApiError = require('../utils/ApiError');
 
+const updatePage = catchAsync(async (req, res) => {
+    const updatedPage = await projectPageService.update(req.params.id, req.body);
+    res.send(updatedPage);
+});
+
 const moveProjectScreens = catchAsync(async (req, res) => {
-    const projectPage = await projectPageService.getProjectPage(req.params.id);
+    const projectPage = await projectPageService.getSingle(req.params.id);
     const projectPageScreenIds = req.body.map((id) => id);
 
     const projectPageScreenBody = {
@@ -19,5 +24,6 @@ const moveProjectScreens = catchAsync(async (req, res) => {
 });
 
 module.exports = {
+    updatePage,
     moveProjectScreens,
 }

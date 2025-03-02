@@ -183,6 +183,7 @@ const getAllByUserId = async (userId) => {
             id: project.id,
             name: project.name,
             importing: project.importing,
+            createdAt: project.createdAt,
             updatedAt: project.updatedAt,
             status: PROJECT_STATUS_ID_MAPPING[project.statusId],
             pages: pages,
