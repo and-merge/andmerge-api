@@ -96,33 +96,56 @@ const getSingle = async (id) => {
             ]
         });
 
+        let screenCount = 0;
+        let importedScreenCount = 0;
+
+        const pages = project.projectPages.map((page) => {
+            const groupedScreens = Object.entries(
+                (page.projectPageScreens ?? []).reduce((acc, screen) => {
+                    const groupId = screen.screenVariantGroupId ?? 'null'; // Handle null/undefined cases
+                    if (!acc[groupId]) {
+                        acc[groupId] = [];
+                    }
+                    acc[groupId].push({
+                        id: screen.id,
+                        name: screen.name,
+                        imageUrl: screen.imageUrl,
+                        screenVariantGroupId: screen.screenVariantGroupId,
+                        variantCount: screen.screenVariantGroup?.dataValues?.screenVariants?.length ?? 0,
+                        variantName: screen.variantName,
+                        status: PROJECT_STATUS_ID_MAPPING[screen.statusId],
+                        updatedAt: screen.updatedAt
+                    });
+
+                    return acc;
+                }, {})
+            ).map(([groupId, screens]) => ({
+                screenVariantGroupId: groupId === 'null' ? null : Number(groupId),
+                screens
+            })).filter(group => Array.isArray(group.screens) && group.screens.length > 0);
+
+            screenCount += page.projectPageScreens?.length ?? 0;
+            importedScreenCount += page.projectPageScreens?.filter((screen) => screen.imageUrl !== null).length ?? 0;
+
+            return {
+                id: page.id,
+                name: page.name,
+                status: PROJECT_STATUS_ID_MAPPING[page.statusId],
+                createdAt: page.createdAt,
+                createdBy: page.createdByUser?.name,
+                createdByImageUrl: page.createdByUser?.imageUrl,
+                screenGroups: groupedScreens
+            }
+        })
+
         const projectDto = {
             id: project.id,
             name: project.name,
             importing: project.importing,
             createdAt: project.createdAt,
-            pages: project.projectPages.map((page) => {
-                const screens = page.projectPageScreens?.map((screen) => ({
-                    id: screen.id,
-                    name: screen.name,
-                    imageUrl: screen.imageUrl,
-                    screenVariantGroupId: screen.screenVariantGroupId,
-                    variantCount: screen.screenVariantGroup?.dataValues?.screenVariants?.length ?? 0,
-                    variantName: screen.variantName,
-                    status: PROJECT_STATUS_ID_MAPPING[screen.statusId],
-                    updatedAt: screen.updatedAt
-                }));
-
-                return {
-                    id: page.id,
-                    name: page.name,
-                    status: PROJECT_STATUS_ID_MAPPING[page.statusId],
-                    createdAt: page.createdAt,
-                    createdBy: page.createdByUser?.name,
-                    createdByImageUrl: page.createdByUser?.imageUrl,
-                    screens: screens
-                }
-            })
+            pages: pages,
+            screenCount: screenCount,
+            importedScreenCount: importedScreenCount,
         }
 
         return projectDto;

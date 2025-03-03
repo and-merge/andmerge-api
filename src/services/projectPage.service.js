@@ -16,9 +16,23 @@ const create = async (projectPageBody) => {
 
 const update = async (projectPageId, projectPageBody) => {
     let t = await db.sequelize.transaction();
-    let projectPage = null;
     try {
         projectPage = await ProjectPage.update(projectPageBody, { where: { id: projectPageId } }, { transaction: t });
+        await t.commit();
+    } catch (error) {
+        await t.rollback();
+        console.error(error);
+    }
+
+    return await getSingle(projectPageId);
+}
+
+const updateDocumentation = async (projectPageId, documentation) => {
+    let t = await db.sequelize.transaction();
+    try {
+        await ProjectPage.update({
+            documentation: documentation
+        }, { where: { id: projectPageId } }, { transaction: t });
         await t.commit();
     } catch (error) {
         await t.rollback();
@@ -68,5 +82,6 @@ const getSingle = async (id) => {
 module.exports = {
     create,
     update,
+    updateDocumentation,
     getSingle
 }

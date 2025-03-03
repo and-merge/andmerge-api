@@ -5,6 +5,10 @@ module.exports = (sequelize, Sequelize) => {
             type: Sequelize.STRING(255),
             allowNull: false,
         },
+        documentation: {
+            type: Sequelize.TEXT,
+            allowNull: true,
+        },
     });
 
     return projectPage;

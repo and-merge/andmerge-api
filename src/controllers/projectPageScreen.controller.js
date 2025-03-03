@@ -40,8 +40,14 @@ const combineProjectPageScreens = catchAsync(async (req, res) => {
     res.send(screenDto);
 });
 
+const updateDocumentation = catchAsync(async (req, res) => {
+    const updatedScreen = await projectPageScreenService.updateDocumentation(req.params.id, req.body);
+    res.send(updatedScreen);
+});
+
 module.exports = {
     getSingle,
     deleteProjectPageScreens,
-    combineProjectPageScreens
+    combineProjectPageScreens,
+    updateDocumentation
 }

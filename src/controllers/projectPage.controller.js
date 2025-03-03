@@ -23,7 +23,13 @@ const moveProjectScreens = catchAsync(async (req, res) => {
     res.send(true);
 });
 
+const updateDocumentation = catchAsync(async (req, res) => {
+    const updatedPage = await projectPageService.updateDocumentation(req.params.id, req.body);
+    res.send(updatedPage);
+});
+
 module.exports = {
     updatePage,
     moveProjectScreens,
+    updateDocumentation
 }
