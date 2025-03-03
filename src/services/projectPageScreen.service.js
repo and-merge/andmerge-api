@@ -103,6 +103,12 @@ const getSingle = async (id) => {
         screenVariantGroupId: projectPageScreen.screenVariantGroupId,
         variantCount: projectPageScreen.screenVariantGroup?.dataValues?.projectPageS ?? 0,
         variantName: projectPageScreen.variantName,
+        variants: projectPageScreen.screenVariantGroup?.projectPageScreens?.map((variant) => {
+            return {
+                id: variant.dataValues?.id,
+                variantName: variant.dataValues?.variantName,
+            }
+        }),
         status: PROJECT_STATUS_ID_MAPPING[projectPageScreen.statusId],
         figmaFileKey: projectPageScreen.project?.projectSource?.key,
         createdAt: projectPageScreen.createdAt,
