@@ -39,7 +39,7 @@ const updateVariant = async (projectPageScreenId, variantName, screenVariantGrou
         await t.rollback();
         console.error(error);
     }
-    
+
     return await getSingle(projectPageScreenId);
 }
 
@@ -92,6 +92,7 @@ const getSingle = async (id) => {
                         {
                             model: db.projectPageScreens,
                             as: 'projectPageScreens',
+                            order: [['id', 'ASC']]
                         }
                     ]
                 },

@@ -79,7 +79,8 @@ const getSingle = async (id) => {
                                         {
                                             model: db.projectPageScreens,
                                             as: 'projectPageScreens',
-                                            attributes: []
+                                            attributes: [],
+                                            order: [['id', 'ASC']]
                                         }
                                     ],
                                 }
@@ -121,7 +122,7 @@ const getSingle = async (id) => {
                 }, {})
             ).map(([groupId, screens]) => ({
                 screenVariantGroupId: groupId === 'null' ? null : Number(groupId),
-                screens
+                screens: screens && screens.length > 0 ? screens.sort((a, b) => a.id - b.id) : []
             })).filter(group => Array.isArray(group.screens) && group.screens.length > 0);
 
             screenCount += page.projectPageScreens?.length ?? 0;

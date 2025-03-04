@@ -48,6 +48,20 @@ const getSingle = async (id) => {
             {
                 model: db.projectPageScreens,
                 as: 'projectPageScreens',
+                include: [
+                    {
+                        model: db.screenVariantGroups,
+                        as: 'screenVariantGroup',
+                        include: [
+                            {
+                                model: db.projectPageScreens,
+                                as: 'projectPageScreens',
+                                attributes: []
+                            }
+                        ],
+                    }
+                ],
+                order: [['id', 'ASC']]
             },
             {
                 model: db.users,
@@ -56,15 +70,29 @@ const getSingle = async (id) => {
         ]
     });
 
-    const screens = projectPage.projectPageScreens?.map((screen) => (
-        {
-            id: screen.id,
-            name: screen.name,
-            status: PROJECT_STATUS_ID_MAPPING[screen.statusId],
-            imageUrl: screen.imageUrl,
-            updatedAt: screen.updatedAt
-        }
-    ));
+    const groupedScreens = Object.entries(
+        (projectPage.projectPageScreens ?? []).reduce((acc, screen) => {
+            const groupId = screen.screenVariantGroupId ?? 'null'; // Handle null/undefined cases
+            if (!acc[groupId]) {
+                acc[groupId] = [];
+            }
+            acc[groupId].push({
+                id: screen.id,
+                name: screen.name,
+                imageUrl: screen.imageUrl,
+                screenVariantGroupId: screen.screenVariantGroupId,
+                variantCount: screen.screenVariantGroup?.dataValues?.screenVariants?.length ?? 0,
+                variantName: screen.variantName,
+                status: PROJECT_STATUS_ID_MAPPING[screen.statusId],
+                updatedAt: screen.updatedAt
+            });
+
+            return acc;
+        }, {})
+    ).map(([groupId, screens]) => ({
+        screenVariantGroupId: groupId === 'null' ? null : Number(groupId),
+        screens
+    })).filter(group => Array.isArray(group.screens) && group.screens.length > 0);
 
     const projectPageDto = {
         id: projectPage.id,
@@ -73,7 +101,7 @@ const getSingle = async (id) => {
         createdAt: projectPage.createdAt,
         createdBy: projectPage.createdByUser?.name,
         createdByImageUrl: projectPage.createdByUser?.imageUrl,
-        screens: screens
+        screenGroups: groupedScreens
     }
 
     return projectPageDto;
