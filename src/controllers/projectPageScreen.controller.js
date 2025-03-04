@@ -41,7 +41,7 @@ const combineProjectPageScreens = catchAsync(async (req, res) => {
 });
 
 const updateDocumentation = catchAsync(async (req, res) => {
-    const updatedScreen = await projectPageScreenService.updateDocumentation(req.params.id, req.body);
+    const updatedScreen = await projectPageScreenService.updateDocumentation(req.params.id, req.body.documentation);
     res.send(updatedScreen);
 });
 

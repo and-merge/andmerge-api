@@ -127,6 +127,7 @@ const getSingle = async (id) => {
                 variantName: variant.dataValues?.variantName,
             }
         }),
+        documentation: projectPageScreen.documentation,
         status: PROJECT_STATUS_ID_MAPPING[projectPageScreen.statusId],
         figmaFileKey: projectPageScreen.project?.projectSource?.key,
         createdAt: projectPageScreen.createdAt,
