@@ -97,6 +97,7 @@ const getSingle = async (id) => {
     const projectPageDto = {
         id: projectPage.id,
         name: projectPage.name,
+        documentation: projectPage.documentation,
         status: PROJECT_STATUS_ID_MAPPING[projectPage.statusId],
         createdAt: projectPage.createdAt,
         createdBy: projectPage.createdByUser?.name,

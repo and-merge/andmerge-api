@@ -24,7 +24,7 @@ const moveProjectScreens = catchAsync(async (req, res) => {
 });
 
 const updateDocumentation = catchAsync(async (req, res) => {
-    const updatedPage = await projectPageService.updateDocumentation(req.params.id, req.body);
+    const updatedPage = await projectPageService.updateDocumentation(req.params.id, req.body.documentation);
     res.send(updatedPage);
 });
 

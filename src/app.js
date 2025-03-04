@@ -1,5 +1,5 @@
 const express = require('express');
-const xss = require('xss-clean');
+const xss = require('xss');
 const compression = require('compression');
 const cors = require('cors');
 const config = require('./config/config');
@@ -29,7 +29,24 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // sanitize request data
-app.use(xss());
+// const sanitizeRequestBody = (req, res, next) => {
+
+//     if (!req.body.documentation) {
+//         return next();
+//     }
+
+//     const allowedTags = ['<p>', '<br>', '<h1>', '<h2>', '<h3>', '<h4>', '<h5>', '<h6>', '<ul>', '<ol>', '<li>', '<b>', '<i>', '<strong>'];
+
+//     req.body.documentation = xss(req.body.documentation, {
+//         whiteList: allowedTags,
+//         stripIgnoreTag: true,
+//         stripIgnoreTagBody: ['script', 'style'] 
+//     });
+
+//     return next();
+// };
+
+// app.use(sanitizeRequestBody);
 
 // gzip compression
 app.use(compression());

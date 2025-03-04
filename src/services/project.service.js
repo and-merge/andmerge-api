@@ -131,6 +131,7 @@ const getSingle = async (id) => {
             return {
                 id: page.id,
                 name: page.name,
+                documentation: page.documentation,
                 status: PROJECT_STATUS_ID_MAPPING[page.statusId],
                 createdAt: page.createdAt,
                 createdBy: page.createdByUser?.name,
