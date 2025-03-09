@@ -10,6 +10,11 @@ const getSingle = catchAsync(async (req, res) => {
     res.send(screen);
 });
 
+const updateProjectPageScreen = catchAsync(async (req, res) => {
+    const updatedScreen = await projectPageScreenService.update(req.params.id, req.body);
+    res.send(updatedScreen);
+});
+
 const deleteProjectPageScreens = catchAsync(async (req, res) => {
     const projectPageScreenIds = req.body.map((id) => id);
     await projectPageScreenService.bulkDelete(projectPageScreenIds);
@@ -33,21 +38,21 @@ const combineProjectPageScreens = catchAsync(async (req, res) => {
 
 
     for (const screen of screens) {
-        const updatedScreen = await projectPageScreenService.updateVariant(screen.id, screen.variantName, screenVariantGroup.id);
+        const variantBody = {
+            variantName: screen.variantName, 
+            screenVariantGroupId: screenVariantGroup.id
+        }
+
+        const updatedScreen = await projectPageScreenService.update(screen.id, variantBody);
         screenDto.push(updatedScreen);
     }
 
     res.send(screenDto);
 });
 
-const updateDocumentation = catchAsync(async (req, res) => {
-    const updatedScreen = await projectPageScreenService.updateDocumentation(req.params.id, req.body.documentation);
-    res.send(updatedScreen);
-});
-
 module.exports = {
     getSingle,
+    updateProjectPageScreen,
     deleteProjectPageScreens,
     combineProjectPageScreens,
-    updateDocumentation
 }
