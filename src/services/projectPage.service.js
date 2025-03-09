@@ -61,7 +61,7 @@ const getSingle = async (id) => {
                         ],
                     }
                 ],
-                order: [['id', 'ASC']]
+                order: [['createdAt', 'ASC']]
             },
             {
                 model: db.users,
@@ -79,6 +79,7 @@ const getSingle = async (id) => {
             acc[groupId].push({
                 id: screen.id,
                 name: screen.name,
+                sourceUrl: screen.sourceUrl,
                 imageUrl: screen.imageUrl,
                 screenVariantGroupId: screen.screenVariantGroupId,
                 variantCount: screen.screenVariantGroup?.dataValues?.screenVariants?.length ?? 0,

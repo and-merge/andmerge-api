@@ -80,12 +80,12 @@ const getSingle = async (id) => {
                                             model: db.projectPageScreens,
                                             as: 'projectPageScreens',
                                             attributes: [],
-                                            order: [['id', 'ASC']]
+                                            order: [['createdAt', 'ASC']]
                                         }
                                     ],
                                 }
                             ],
-                            order: [['id', 'ASC']]
+                            order: [['createdAt', 'ASC']]
                         },
                         {
                             model: db.users,
@@ -184,12 +184,14 @@ const getAllByUserId = async (userId) => {
         let importedScreenCount = 0;
 
         const pages = project.projectPages?.map((page) => {
-            const screens = page.projectPageScreens.map((screen) => {
+            const screens = page.projectPageScreens.map((screen, index) => {
+                const imageUrl = (index <= 3 ? screen.imageUrl : null);
+
                 return {
                     id: screen.id,
                     name: screen.name,
                     sourceUrl: screen.sourceUrl,
-                    imageUrl: screen.imageUrl
+                    imageUrl: imageUrl
                 }
             });
 
@@ -200,7 +202,7 @@ const getAllByUserId = async (userId) => {
                 id: page.id,
                 name: page.name,
                 createdAt: page.createdAt,
-                screens: screens.slice(0, 4)
+                screens: screens
             }
         });
 
