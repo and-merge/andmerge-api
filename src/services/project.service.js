@@ -111,6 +111,7 @@ const getSingle = async (id) => {
                         id: screen.id,
                         name: screen.name,
                         imageUrl: screen.imageUrl,
+                        projectPageId: screen.projectPageId,
                         screenVariantGroupId: screen.screenVariantGroupId,
                         variantCount: screen.screenVariantGroup?.dataValues?.screenVariants?.length ?? 0,
                         variantName: screen.variantName,

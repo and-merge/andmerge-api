@@ -14,17 +14,17 @@ const create = async (projectPageScreenBody) => {
     }
 }
 
-const update = async (projectPageScreenId, projectPageScreenBody) => {
+const update = async (id, projectPageScreenBody) => {
     let t = await db.sequelize.transaction();
     try {
-        await ProjectPageScreen.update(projectPageScreenBody, { where: { id: projectPageScreenId } }, { transaction: t });
+        await ProjectPageScreen.update(projectPageScreenBody, { where: { id: id } }, { transaction: t });
         await t.commit();
     } catch (error) {
         await t.rollback();
         console.error(error);
     }
 
-    return await getSingle(projectPageScreenId);
+    return await getSingle(id);
 }
 
 const bulkUpdate = async (projectPageScreenIds, projectPageScreenBody) => {
@@ -86,7 +86,9 @@ const getSingle = async (id) => {
         id: projectPageScreen.id,
         name: projectPageScreen.name,
         sourceId: projectPageScreen.sourceId,
+        sourceUrl: projectPageScreen.sourceUrl,
         imageUrl: projectPageScreen.imageUrl,
+        projectPageId: projectPageScreen.projectPageId,
         screenVariantGroupId: projectPageScreen.screenVariantGroupId,
         variantCount: projectPageScreen.screenVariantGroup?.dataValues?.projectPageS ?? 0,
         variantName: projectPageScreen.variantName,
@@ -108,10 +110,25 @@ const getSingle = async (id) => {
     return projectPageScreenDto;
 }
 
+const destroy = async (id) => {
+    let t = await db.sequelize.transaction();
+    try {
+        await ProjectPageScreen.destroy({
+            where: { id: id }
+        });
+        await t.commit();
+
+    } catch (error) {
+        await t.rollback();
+        console.log(error);
+    }
+}
+
 module.exports = {
     create,
     update,
     bulkUpdate,
     bulkDelete,
-    getSingle
+    getSingle,
+    destroy
 }
