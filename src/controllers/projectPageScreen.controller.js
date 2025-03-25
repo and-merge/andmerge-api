@@ -1,6 +1,6 @@
 const httpStatus = require('http-status');
 
-const { projectPageScreenService, screenVariantGroupService, projectPageService, screenBreakpointGroupService } = require('../services');
+const { projectPageScreenService, screenVariantGroupService, projectPageService } = require('../services');
 const catchAsync = require("../utils/catchAsync");
 const ApiError = require('../utils/ApiError');
 const { PROJECT_STATUS_ID_MAPPING } = require('../utils/Enum');
@@ -89,30 +89,24 @@ const combineProjectPageScreens = catchAsync(async (req, res) => {
 });
 
 const assignProjectPageScreens = catchAsync(async (req, res) => {
-    const screens = req.body;
-    let screenBreakpointGroupIds = screens.map((screen) => (screen.screenBreakpointGroupId)).filter(v => v !== undefined && v !== null && v !== "");
-    const uniqueIds = new Set(screenBreakpointGroupIds);
-    const isUnique = uniqueIds.size > 1;
-    if (screenBreakpointGroupIds.length > 0 && isUnique) throw new ApiError(httpStatus.status.BAD_REQUEST, 'Multiple screens already belong to different breakpoints.');
-
-    let screenBreakpointGroup = null;
-
-    if (screenBreakpointGroupIds.length === 0) {
-        screenBreakpointGroup = await screenBreakpointGroupService.create();
-    } else {
-        screenBreakpointGroup = await screenBreakpointGroupService.getSingle(screenBreakpointGroupIds[0]);
-    };
+    let screens = req.body;
+    if (!screens || screens.length === 0) throw new ApiError(500, 'No screens!');
+    screens = screens.sort((a, b) => Number(a.screenBreakpointTypeId) - Number(b.screenBreakpointTypeId));
+    const defaultBreakpoint = screens[0];
 
     for (const screen of screens) {
-        const groupBody = {
+        let screenDto = {
+            defaultBreakpointId: null,
             screenBreakpointTypeId: screen.screenBreakpointTypeId,
-            screenBreakpointGroupId: screenBreakpointGroup.id
         };
 
-        const updatedScreen = await projectPageScreenService.update(screen.id, groupBody);
-    };
+        if (screen.id !== defaultBreakpoint.id) {
+            screenDto.defaultBreakpointId = defaultBreakpoint.id;
+        }
+        const updatedScreen = await projectPageScreenService.update(screen.id, screenDto);
+    }
 
-    res.send(screenBreakpointGroup);
+    res.send(screens);
 });
 
 module.exports = {

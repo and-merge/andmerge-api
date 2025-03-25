@@ -31,7 +31,6 @@ db.projectPageDocumentations = require('./projectPageDocumentation.model.js')(se
 db.projectPageScreens = require('./projectPageScreen.model.js')(sequelize, Sequelize);
 db.screenVariantGroups = require('./screenVariantGroup.model.js')(sequelize, Sequelize);
 db.screenBreakpointTypes = require('./screenBreakpointType.model.js')(sequelize, Sequelize);
-db.screenBreakpointGroups = require('./screenBreakpointGroup.model.js')(sequelize, Sequelize);
 db.projectPageScreenDocumentations = require('./projectPageScreenDocumentation.model.js')(sequelize, Sequelize);
 db.sourceTypes = require('./sourceType.model.js')(sequelize, Sequelize);
 db.statuses = require('./status.model.js')(sequelize, Sequelize);
@@ -265,6 +264,13 @@ db.projectPageDocumentations.belongsTo(db.users, {
 
 // ********** Project Page Screens **********
 
+db.projectPageScreens.hasMany(db.projectPageScreens, {
+    foreignKey: {
+        name: 'defaultBreakpointId',
+    },
+    as: 'breakpoints'
+});
+
 db.projectPageScreens.belongsTo(db.users, {
     foreignKey: {
         name: 'createdByUserId',
@@ -310,13 +316,6 @@ db.projectPageScreens.belongsTo(db.screenVariantGroups, {
     as: 'screenVariantGroup'
 });
 
-db.projectPageScreens.belongsTo(db.screenBreakpointGroups, {
-    foreignKey: {
-        name: 'screenBreakpointGroupId',
-    },
-    as: 'screenBreakpointGroup'
-});
-
 db.projectPageScreens.belongsTo(db.screenBreakpointTypes, {
     foreignKey: {
         name: 'screenBreakpointTypeId',
@@ -324,20 +323,18 @@ db.projectPageScreens.belongsTo(db.screenBreakpointTypes, {
     as: 'screenBreakpointType'
 });
 
+db.projectPageScreens.belongsTo(db.projectPageScreens, {
+    foreignKey: {
+        name: 'defaultBreakpointId',
+    },
+    as: 'defaultBreakpoint'
+});
+
 // ********** Screen Variant Groups **********
 
 db.screenVariantGroups.hasMany(db.projectPageScreens, {
     foreignKey: {
         name: 'screenVariantGroupId',
-    },
-    as: 'projectPageScreens'
-});
-
-// ********** Screen Breakpoint Groups **********
-
-db.screenBreakpointGroups.hasMany(db.   projectPageScreens, {
-    foreignKey: {
-        name: 'screenBreakpointGroupId',
     },
     as: 'projectPageScreens'
 });
