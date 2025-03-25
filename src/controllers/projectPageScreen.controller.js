@@ -1,6 +1,6 @@
 const httpStatus = require('http-status');
 
-const { projectPageScreenService, screenVariantGroupService, projectPageService } = require('../services');
+const { projectPageScreenService, screenVariantGroupService, projectPageService, screenBreakpointGroupService } = require('../services');
 const catchAsync = require("../utils/catchAsync");
 const ApiError = require('../utils/ApiError');
 const { PROJECT_STATUS_ID_MAPPING } = require('../utils/Enum');
@@ -12,7 +12,7 @@ const getProjectPageScreen = catchAsync(async (req, res) => {
 
 const getProjectPageScreensByProjectPageId = catchAsync(async (req, res) => {
     const projectPage = await projectPageService.getSingle(req.params.projectPageId);
-    if (!projectPage)  throw new ApiError(httpStatus.status.BAD_REQUEST, 'Project Page not found');
+    if (!projectPage) throw new ApiError(httpStatus.status.BAD_REQUEST, 'Project Page not found');
     const screens = projectPage.screenGroups.flatMap((group) => group.screens);
     res.send(screens);
 });
@@ -57,32 +57,62 @@ const deleteProjectPageScreens = catchAsync(async (req, res) => {
 });
 
 const combineProjectPageScreens = catchAsync(async (req, res) => {
+    try {
+        const screens = req.body;
+        let screenVariantGroupIds = screens.map((screen) => (screen.screenVariantGroupId)).filter(v => v !== undefined && v !== null && v !== "");
+        const uniqueIds = new Set(screenVariantGroupIds);
+        const isUnique = uniqueIds.size > 1;
+        if (screenVariantGroupIds.length > 0 && isUnique) throw new ApiError(httpStatus.status.BAD_REQUEST, 'These screens cannot be combined because they are already variants of other screens.');
+
+        let screenVariantGroup = null;
+
+        if (screenVariantGroupIds.length === 0) {
+            screenVariantGroup = await screenVariantGroupService.create();
+        } else {
+            screenVariantGroup = await screenVariantGroupService.getSingle(screenVariantGroupIds[0]);
+        };
+
+        for (const screen of screens) {
+            const variantBody = {
+                variantName: screen.variantName,
+                screenVariantGroupId: screenVariantGroup.id
+            };
+
+            const updatedScreen = await projectPageScreenService.update(screen.id, variantBody);
+        };
+
+        res.send(screenVariantGroup);
+    } catch (error) {
+        console.log(error);
+        throw new ApiError(httpStatus.status.BAD_REQUEST, '');
+    }
+});
+
+const assignProjectPageScreens = catchAsync(async (req, res) => {
     const screens = req.body;
-    let screensDto = [];
-    let screenVariantGroupIds = screens.map((screen) => (screen.screenVariantGroupId)).filter(v => v !== undefined && v !== null && v !== "");
-    const uniqueIds = new Set(screenVariantGroupIds);
+    let screenBreakpointGroupIds = screens.map((screen) => (screen.screenBreakpointGroupId)).filter(v => v !== undefined && v !== null && v !== "");
+    const uniqueIds = new Set(screenBreakpointGroupIds);
     const isUnique = uniqueIds.size > 1;
-    if (screenVariantGroupIds.length > 0 && isUnique) throw new ApiError(httpStatus.status.BAD_REQUEST, 'These screens cannot be combined because they are already variants of other screens.');
+    if (screenBreakpointGroupIds.length > 0 && isUnique) throw new ApiError(httpStatus.status.BAD_REQUEST, 'Multiple screens already belong to different breakpoints.');
 
-    let screenVariantGroup = null;
+    let screenBreakpointGroup = null;
 
-    if (screenVariantGroupIds.length === 0) {
-        screenVariantGroup = await screenVariantGroupService.create();
+    if (screenBreakpointGroupIds.length === 0) {
+        screenBreakpointGroup = await screenBreakpointGroupService.create();
     } else {
-        screenVariantGroup = await screenVariantGroupService.getSingle(screenVariantGroupIds[0]);
+        screenBreakpointGroup = await screenBreakpointGroupService.getSingle(screenBreakpointGroupIds[0]);
     };
 
     for (const screen of screens) {
-        const variantBody = {
-            variantName: screen.variantName, 
-            screenVariantGroupId: screenVariantGroup.id
+        const groupBody = {
+            screenBreakpointTypeId: screen.screenBreakpointTypeId,
+            screenBreakpointGroupId: screenBreakpointGroup.id
         };
 
-        const updatedScreen = await projectPageScreenService.update(screen.id, variantBody);
-        screensDto.push(updatedScreen);
+        const updatedScreen = await projectPageScreenService.update(screen.id, groupBody);
     };
 
-    res.send(screenVariantGroup);
+    res.send(screenBreakpointGroup);
 });
 
 module.exports = {
@@ -91,4 +121,5 @@ module.exports = {
     updateProjectPageScreen,
     deleteProjectPageScreens,
     combineProjectPageScreens,
+    assignProjectPageScreens
 }

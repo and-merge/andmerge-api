@@ -1,6 +1,7 @@
 const SourceTypeSeed = require('./sourceType');
 const StatusSeed = require('./status');
 const StatusTypeSeed = require('./statusType');
+const ScreenBreakpointTypeSeed = require('./screenBreakpointType');
 
 module.exports = function () {
   return Promise.all([
@@ -8,7 +9,7 @@ module.exports = function () {
     // Independent seeds first
     SourceTypeSeed(),
     StatusTypeSeed(),
-
+    ScreenBreakpointTypeSeed(),
   ])
     .then(() => {
       // More seeds that require IDs from the seeds above

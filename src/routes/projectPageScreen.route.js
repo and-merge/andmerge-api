@@ -7,5 +7,6 @@ router.get('/getAllByProjectPageId/:projectPageId', projectPageScreenController.
 router.put('/:id', projectPageScreenController.updateProjectPageScreen);
 router.delete('/deleteScreens', projectPageScreenController.deleteProjectPageScreens);
 router.post('/combineScreens', projectPageScreenController.combineProjectPageScreens);
+router.post('/assignScreens', projectPageScreenController.assignProjectPageScreens);
 
 module.exports = router;
