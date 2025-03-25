@@ -11,7 +11,9 @@ const updatePage = catchAsync(async (req, res) => {
 
 const moveProjectScreens = catchAsync(async (req, res) => {
     const projectPage = await projectPageService.getSingle(req.params.id);
-    const projectPageScreenIds = req.body.map((id) => id);
+    const projectPageScreenIds = req.body.map((id) => id) ?? [];
+
+    if (projectPageScreenIds.length === 0) throw new ApiError(httpStatus.status.BAD_REQUEST, 'No screens.');
 
     const projectPageScreenBody = {
         projectPageId: projectPage.id,

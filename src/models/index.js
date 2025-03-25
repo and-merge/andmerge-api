@@ -30,6 +30,8 @@ db.projectPages = require('./projectPage.model.js')(sequelize, Sequelize);
 db.projectPageDocumentations = require('./projectPageDocumentation.model.js')(sequelize, Sequelize);
 db.projectPageScreens = require('./projectPageScreen.model.js')(sequelize, Sequelize);
 db.screenVariantGroups = require('./screenVariantGroup.model.js')(sequelize, Sequelize);
+db.screenBreakpointTypes = require('./screenBreakpointType.model.js')(sequelize, Sequelize);
+db.screenBreakpointGroups = require('./screenBreakpointGroup.model.js')(sequelize, Sequelize);
 db.projectPageScreenDocumentations = require('./projectPageScreenDocumentation.model.js')(sequelize, Sequelize);
 db.sourceTypes = require('./sourceType.model.js')(sequelize, Sequelize);
 db.statuses = require('./status.model.js')(sequelize, Sequelize);
@@ -308,11 +310,43 @@ db.projectPageScreens.belongsTo(db.screenVariantGroups, {
     as: 'screenVariantGroup'
 });
 
+db.projectPageScreens.belongsTo(db.screenBreakpointGroups, {
+    foreignKey: {
+        name: 'screenBreakpointGroupId',
+    },
+    as: 'screenBreakpointGroup'
+});
+
+db.projectPageScreens.belongsTo(db.screenBreakpointTypes, {
+    foreignKey: {
+        name: 'screenBreakpointTypeId',
+    },
+    as: 'screenBreakpointType'
+});
+
 // ********** Screen Variant Groups **********
 
 db.screenVariantGroups.hasMany(db.projectPageScreens, {
     foreignKey: {
         name: 'screenVariantGroupId',
+    },
+    as: 'projectPageScreens'
+});
+
+// ********** Screen Breakpoint Groups **********
+
+db.screenBreakpointGroups.hasMany(db.   projectPageScreens, {
+    foreignKey: {
+        name: 'screenBreakpointGroupId',
+    },
+    as: 'projectPageScreens'
+});
+
+// ********** Screen Breakpoint Types **********
+
+db.screenBreakpointTypes.hasMany(db.projectPageScreens, {
+    foreignKey: {
+        name: 'screenBreakpointTypeId',
     },
     as: 'projectPageScreens'
 });

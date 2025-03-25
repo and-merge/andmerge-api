@@ -71,20 +71,6 @@ const getSingle = async (id) => {
                         {
                             model: db.projectPageScreens,
                             as: 'projectPageScreens',
-                            include: [
-                                {
-                                    model: db.screenVariantGroups,
-                                    as: 'screenVariantGroup',
-                                    include: [
-                                        {
-                                            model: db.projectPageScreens,
-                                            as: 'projectPageScreens',
-                                            attributes: [],
-                                            order: [['createdAt', 'ASC']]
-                                        }
-                                    ],
-                                }
-                            ],
                             order: [['createdAt', 'ASC']]
                         },
                         {
@@ -94,38 +80,13 @@ const getSingle = async (id) => {
                     ],
                     order: [['createdAt', 'ASC']]
                 }
-            ]
+            ],
         });
 
         let screenCount = 0;
         let importedScreenCount = 0;
 
         const pages = project.projectPages.map((page) => {
-            const groupedScreens = Object.entries(
-                (page.projectPageScreens ?? []).reduce((acc, screen) => {
-                    const groupId = screen.screenVariantGroupId ?? 'null'; // Handle null/undefined cases
-                    if (!acc[groupId]) {
-                        acc[groupId] = [];
-                    }
-                    acc[groupId].push({
-                        id: screen.id,
-                        name: screen.name,
-                        imageUrl: screen.imageUrl,
-                        projectPageId: screen.projectPageId,
-                        screenVariantGroupId: screen.screenVariantGroupId,
-                        variantCount: screen.screenVariantGroup?.dataValues?.screenVariants?.length ?? 0,
-                        variantName: screen.variantName,
-                        status: PROJECT_STATUS_ID_MAPPING[screen.statusId],
-                        updatedAt: screen.updatedAt
-                    });
-
-                    return acc;
-                }, {})
-            ).map(([groupId, screens]) => ({
-                screenVariantGroupId: groupId === 'null' ? null : Number(groupId),
-                screens: screens && screens.length > 0 ? screens.sort((a, b) => a.id - b.id) : []
-            })).filter(group => Array.isArray(group.screens) && group.screens.length > 0);
-
             screenCount += page.projectPageScreens?.length ?? 0;
             importedScreenCount += page.projectPageScreens?.filter((screen) => screen.imageUrl !== null).length ?? 0;
 
@@ -137,7 +98,7 @@ const getSingle = async (id) => {
                 createdAt: page.createdAt,
                 createdBy: page.createdByUser?.name,
                 createdByImageUrl: page.createdByUser?.imageUrl,
-                screenGroups: groupedScreens
+                screens: page.projectPageScreens
             }
         })
 
@@ -150,6 +111,7 @@ const getSingle = async (id) => {
             screenCount: screenCount,
             importedScreenCount: importedScreenCount,
         }
+
 
         return projectDto;
     } catch (error) {
