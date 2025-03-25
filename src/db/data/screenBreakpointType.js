@@ -6,7 +6,7 @@ module.exports = function () {
         // Returning and thus passing a Promise here
         {
             id: 1,
-            name: 'Default',
+            name: 'Desktop',
         },
         {
             id: 2,

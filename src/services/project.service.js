@@ -71,6 +71,13 @@ const getSingle = async (id) => {
                         {
                             model: db.projectPageScreens,
                             as: 'projectPageScreens',
+                            include: [
+                                {
+                                    model: db.projectPageScreens,
+                                    as: 'breakpoints',
+                                    order: [['screenBreakpointTypeId', 'ASC']]
+                                }
+                            ],
                             order: [['createdAt', 'ASC']]
                         },
                         {
@@ -90,6 +97,29 @@ const getSingle = async (id) => {
             screenCount += page.projectPageScreens?.length ?? 0;
             importedScreenCount += page.projectPageScreens?.filter((screen) => screen.imageUrl !== null).length ?? 0;
 
+            const screens = page.projectPageScreens?.map((screen) => ({
+                id: screen.id,
+                name: screen.name,
+                sourceUrl: screen.sourceUrl,
+                imageUrl: screen.imageUrl,
+                projectPageId: screen.projectPageId,
+                screenVariantGroupId: screen.screenVariantGroupId,
+                defaultBreakpointId: screen.defaultBreakpointId,
+                screenBreakpointTypeId: screen.screenBreakpointTypeId,
+                variantCount: screen.screenVariantGroup?.dataValues?.screenVariants?.length ?? 0,
+                variantName: screen.variantName,
+                status: PROJECT_STATUS_ID_MAPPING[screen.statusId],
+                updatedAt: screen.updatedAt,
+                breakpoints: screen.breakpoints?.map((breakpoint) => (
+                    {
+                        id: breakpoint?.dataValues?.id,
+                        name: breakpoint?.dataValues?.name,
+                        defaultBreakpointId: breakpoint?.dataValues?.defaultBreakpointId,
+                        screenBreakpointTypeId: breakpoint?.dataValues?.screenBreakpointTyp,
+                    }
+                )) ?? []
+            }))
+
             return {
                 id: page.id,
                 name: page.name,
@@ -98,7 +128,7 @@ const getSingle = async (id) => {
                 createdAt: page.createdAt,
                 createdBy: page.createdByUser?.name,
                 createdByImageUrl: page.createdByUser?.imageUrl,
-                screens: page.projectPageScreens
+                screens: screens,
             }
         })
 
