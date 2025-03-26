@@ -61,6 +61,11 @@ const getSingle = async (id) => {
                             }
                         ],
                     },
+                    {
+                        model: db.projectPageScreens,
+                        as: 'breakpoints',
+                        order: [['screenBreakpointTypeId', 'ASC']]
+                    }
                 ],
                 order: [['createdAt', 'ASC']]
             },
@@ -71,31 +76,28 @@ const getSingle = async (id) => {
         ]
     });
 
-    const groupedScreens = Object.entries(
-        (projectPage.projectPageScreens ?? []).reduce((acc, screen) => {
-            const groupId = screen.screenVariantGroupId ?? 'null'; // Handle null/undefined cases
-            if (!acc[groupId]) {
-                acc[groupId] = [];
+    const screens = projectPage.projectPageScreens?.map((screen) => ({
+        id: screen.id,
+        name: screen.name,
+        sourceUrl: screen.sourceUrl,
+        imageUrl: screen.imageUrl,
+        projectPageId: screen.projectPageId,
+        screenVariantGroupId: screen.screenVariantGroupId,
+        defaultBreakpointId: screen.defaultBreakpointId,
+        screenBreakpointTypeId: screen.screenBreakpointTypeId,
+        variantCount: screen.screenVariantGroup?.dataValues?.screenVariants?.length ?? 0,
+        variantName: screen.variantName,
+        status: PROJECT_STATUS_ID_MAPPING[screen.statusId],
+        updatedAt: screen.updatedAt,
+        breakpoints: screen.breakpoints?.map((breakpoint) => (
+            {
+                id: breakpoint?.dataValues?.id,
+                name: breakpoint?.dataValues?.name,
+                defaultBreakpointId: breakpoint?.dataValues?.defaultBreakpointId,
+                screenBreakpointTypeId: breakpoint?.dataValues?.screenBreakpointTyp,
             }
-            acc[groupId].push({
-                id: screen.id,
-                name: screen.name,
-                sourceUrl: screen.sourceUrl,
-                imageUrl: screen.imageUrl,
-                projectPageId: screen.projectPageId,
-                screenVariantGroupId: screen.screenVariantGroupId,
-                variantCount: screen.screenVariantGroup?.dataValues?.screenVariants?.length ?? 0,
-                variantName: screen.variantName,
-                status: PROJECT_STATUS_ID_MAPPING[screen.statusId],
-                updatedAt: screen.updatedAt
-            });
-
-            return acc;
-        }, {})
-    ).map(([groupId, screens]) => ({
-        screenVariantGroupId: groupId === 'null' ? null : Number(groupId),
-        screens
-    })).filter(group => Array.isArray(group.screens) && group.screens.length > 0);
+        )) ?? []
+    }))
 
     const projectPageDto = {
         id: projectPage.id,
@@ -105,7 +107,7 @@ const getSingle = async (id) => {
         createdAt: projectPage.createdAt,
         createdBy: projectPage.createdByUser?.name,
         createdByImageUrl: projectPage.createdByUser?.imageUrl,
-        screenGroups: groupedScreens
+        screens: screens
     }
 
     return projectPageDto;

@@ -55,6 +55,11 @@ const getSingle = async (id) => {
         {
             include: [
                 {
+                    model: db.projectPageScreens,
+                    as: 'breakpoints',
+                    order: [['screenBreakpointTypeId', 'ASC']]
+                },
+                {
                     model: db.screenVariantGroups,
                     as: 'screenVariantGroup',
                     include: [
@@ -105,6 +110,14 @@ const getSingle = async (id) => {
         createdBy: projectPageScreen.createdByUser?.name,
         createdByImageUrl: projectPageScreen.createdByUser?.imageUrl,
         updatedAt: projectPageScreen.updatedAt,
+        breakpoints: projectPageScreen.breakpoints?.map((breakpoint) => (
+            {
+                id: breakpoint?.dataValues?.id,
+                name: breakpoint?.dataValues?.name,
+                defaultBreakpointId: breakpoint?.dataValues?.defaultBreakpointId,
+                screenBreakpointTypeId: breakpoint?.dataValues?.screenBreakpointTyp,
+            }
+        )) ?? []
     };
 
     return projectPageScreenDto;
