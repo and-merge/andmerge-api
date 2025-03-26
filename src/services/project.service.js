@@ -76,7 +76,19 @@ const getSingle = async (id) => {
                                     model: db.projectPageScreens,
                                     as: 'breakpoints',
                                     order: [['screenBreakpointTypeId', 'ASC']]
-                                }
+                                },
+                                {
+                                    model: db.screenVariantGroups,
+                                    as: 'screenVariantGroup',
+                                    include: [
+                                        {
+                                            model: db.projectPageScreens,
+                                            as: 'projectPageScreens',
+                                            attributes: [],
+                                            order: [['createdAt', 'ASC']]
+                                        }
+                                    ],
+                                },
                             ],
                             order: [['createdAt', 'ASC']]
                         },
