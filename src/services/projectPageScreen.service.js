@@ -87,6 +87,47 @@ const getSingle = async (id) => {
             ]
         });
 
+    let breakpoints = projectPageScreen.breakpoints?.map((breakpoint) => (
+        {
+            id: breakpoint?.id,
+            name: breakpoint?.name,
+            defaultBreakpointId: breakpoint.defaultBreakpointId,
+            screenBreakpointTypeId: breakpoint.screenBreakpointTypeId,
+        }
+    )) ?? [];
+
+    if (projectPageScreen.defaultBreakpointId) {
+        const defaultBreakpoint = await ProjectPageScreen.findByPk(projectPageScreen.defaultBreakpointId, {
+            include: [
+                {
+                    model: db.projectPageScreens,
+                    as: 'breakpoints',
+                    order: [['screenBreakpointTypeId', 'ASC']]
+                },
+            ]
+        });
+
+        if (defaultBreakpoint) {
+            breakpoints = [
+                {
+                    id: defaultBreakpoint.id,
+                    name: defaultBreakpoint.name,
+                    defaultBreakpointId: defaultBreakpoint.defaultBreakpointId,
+                    screenBreakpointTypeId: defaultBreakpoint.screenBreakpointTypeId,
+                },
+                ...defaultBreakpoint.breakpoints?.map((breakpoint) => (
+                    {
+                        id: breakpoint.id,
+                        name: breakpoint.name,
+                        defaultBreakpointId: breakpoint.defaultBreakpointId,
+                        screenBreakpointTypeId: breakpoint.screenBreakpointTypeId,
+                    }
+                ))
+            ] ?? [];
+        };
+    }
+
+
     const projectPageScreenDto = {
         id: projectPageScreen.id,
         name: projectPageScreen.name,
@@ -95,6 +136,8 @@ const getSingle = async (id) => {
         imageUrl: projectPageScreen.imageUrl,
         projectPageId: projectPageScreen.projectPageId,
         screenVariantGroupId: projectPageScreen.screenVariantGroupId,
+        defaultBreakpointId: projectPageScreen.defaultBreakpointId,
+        screenBreakpointTypeId: projectPageScreen.screenBreakpointTypeId,
         variantCount: projectPageScreen.screenVariantGroup?.dataValues?.projectPageS ?? 0,
         variantName: projectPageScreen.variantName,
         variants: projectPageScreen.screenVariantGroup?.projectPageScreens?.map((variant) => {
@@ -110,14 +153,7 @@ const getSingle = async (id) => {
         createdBy: projectPageScreen.createdByUser?.name,
         createdByImageUrl: projectPageScreen.createdByUser?.imageUrl,
         updatedAt: projectPageScreen.updatedAt,
-        breakpoints: projectPageScreen.breakpoints?.map((breakpoint) => (
-            {
-                id: breakpoint?.dataValues?.id,
-                name: breakpoint?.dataValues?.name,
-                defaultBreakpointId: breakpoint?.dataValues?.defaultBreakpointId,
-                screenBreakpointTypeId: breakpoint?.dataValues?.screenBreakpointTyp,
-            }
-        )) ?? []
+        breakpoints: breakpoints
     };
 
     return projectPageScreenDto;
